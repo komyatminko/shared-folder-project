@@ -38,7 +38,13 @@ public class Main {
 //		main.copyFiles(sharedUtils, share);
 		
 		//move files from one folder to another on server
-		main.moveFiles(sharedUtils, share);
+//		main.moveFiles(sharedUtils, share);
+		
+		//upload file from local file system onto server
+//		main.uploadFile(sharedUtils, share);
+		
+		//download file from server to local file system
+		main.downloadFile(sharedUtils, share);
 
 	}
 
@@ -109,5 +115,33 @@ public class Main {
 		}
 		shareUtils.disconnect();
 	}
+	
+	public void uploadFile(SharedUtils shareUtils, DiskShare share) {
+		String localFilePath = "C:\\Users\\myatminko\\workspace\\PdfFiles Output\\tailwind-css-starter-kit_compress.pdf";
+		String remoteFilePath = "UOBKHFileUploadTesting\\DoneClone\\target folder\\tailwind-css-starter-kit_compress.pdf";
+
+		try {
+			shareUtils.uploadFile(share, localFilePath, remoteFilePath);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		shareUtils.disconnect();
+	}
+	
+	public void downloadFile(SharedUtils shareUtils, DiskShare share) {
+		String localFilePath = "C:\\Users\\myatminko\\workspace\\PdfFiles Output\\tailwind-css-starter-kit_compress.pdf";
+		String remoteFilePath = "UOBKHFileUploadTesting\\DoneClone\\target folder\\tailwind-css-starter-kit_compress.pdf";
+
+		try {
+			shareUtils.downloadFile(share, remoteFilePath, localFilePath);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		shareUtils.disconnect();
+	}
+	
+	
 	
 }

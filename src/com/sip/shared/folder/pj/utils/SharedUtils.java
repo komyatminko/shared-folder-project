@@ -1,6 +1,7 @@
 package com.sip.shared.folder.pj.utils;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -198,7 +199,7 @@ public class SharedUtils {
 	            null)) {
 
 	        file.rename(targetPath);
-	        System.out.println("File copied: " + targetPath);
+	        System.out.println("File moved: " + targetPath);
 	    }
 	}
 	
@@ -225,4 +226,48 @@ public class SharedUtils {
 		}
 	}
 
+	
+	public void uploadFile(DiskShare share, String localFilePath, String remoteFilePath) throws Exception {
+        try (InputStream localInput = new FileInputStream(localFilePath);
+             File remoteFile = share.openFile(
+                     remoteFilePath,
+                     EnumSet.of(AccessMask.GENERIC_WRITE),
+                     null,
+                     SMB2ShareAccess.ALL,
+                     SMB2CreateDisposition.FILE_OVERWRITE_IF,
+                     null);
+             OutputStream remoteOutput = remoteFile.getOutputStream()) {
+
+            byte[] buffer = new byte[1024 * 1024]; // 8KB
+            int bytesRead;
+            while ((bytesRead = localInput.read(buffer)) > 0) {
+                remoteOutput.write(buffer, 0, bytesRead);
+            }
+            
+            System.out.println("File uploaded successfully.");
+        }
+    }
+	
+	public void downloadFile(DiskShare share, String remoteFilePath, String localFilePath) throws IOException {
+        try (File serverFile = share.openFile(
+                remoteFilePath,
+                EnumSet.of(AccessMask.GENERIC_READ),
+                null,
+                SMB2ShareAccess.ALL,
+                SMB2CreateDisposition.FILE_OPEN,
+                null);
+             FileOutputStream fos = new FileOutputStream(localFilePath)) {
+
+            byte[] buffer = new byte[1024 * 1024]; // 1MB 
+            int offset = 0;
+            int bytesRead;
+
+            while ((bytesRead = serverFile.read(buffer, offset, 0, buffer.length)) > 0) {
+                fos.write(buffer, 0, bytesRead);
+                offset += bytesRead; // move forward in the file
+            }
+
+            System.out.println("File downloaded successfully.");
+        }
+    }
 }
