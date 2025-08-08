@@ -1,13 +1,23 @@
 package com.sip.shared.folder.pj.utils;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.EnumSet;
 import java.util.List;
 
+import com.hierynomus.msdtyp.AccessMask;
+import com.hierynomus.msfscc.FileAttributes;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
+import com.hierynomus.mssmb2.SMB2CreateDisposition;
+import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.auth.AuthenticationContext;
 import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
+import com.hierynomus.smbj.share.File;
 
 public class SharedUtils {
 
@@ -108,12 +118,111 @@ public class SharedUtils {
 			}
 		}
 	}
-	
+
 	public void deleteFolder(DiskShare share, String folderPath) {
+
+		boolean isFolderExist = isFolderExist(share, folderPath);
+		if (isFolderExist) {
+			share.rmdir(folderPath, true); // if set true, folder and files inside it will be deleted
+											// if set false, only empty folder will be deleted.
+			System.out.println("Folder deleted successfully.");
+		} else {
+			System.out.println("Folder not found.");
+		}
+
+	}
+
+	// copying file and folder on server
+	public void copyFile(DiskShare share, String sourcePath, String targetPath) throws IOException {
+
+		try (
+				InputStream input = share.openFile(
+					sourcePath, 
+					EnumSet.of(AccessMask.GENERIC_READ), 
+					null,
+					SMB2ShareAccess.ALL, 
+					SMB2CreateDisposition.FILE_OPEN, 
+					null).getInputStream();
+
+				OutputStream out = share.openFile(
+						targetPath, 
+						EnumSet.of(AccessMask.GENERIC_WRITE), 
+						null,
+						SMB2ShareAccess.ALL, 
+						SMB2CreateDisposition.FILE_OVERWRITE_IF, 
+						null).getOutputStream()
+			) {
+
+			byte[] buffer = new byte[8192]; // 8KB
+			int bytesRead;
+			while ((bytesRead = input.read(buffer)) > 0) {
+				out.write(buffer, 0, bytesRead);
+			}
+			System.out.println("File copied: " + targetPath);
+		}
 		
+
+	}
+
+	public void copyFiles(DiskShare share, String sourcePath, String targetPath) throws IOException {
+
+		boolean isFolderExist = isFolderExist(share, sourcePath);
+		if (isFolderExist) {
+			List<FileIdBothDirectoryInformation> files = share.list(sourcePath);
+
+			for (FileIdBothDirectoryInformation file : files) {
+
+				if (file.getFileName().equals(".") || file.getFileName().equals("..")) {
+					continue;
+				}
+
+				String sourceFullPath = sourcePath + "/" + file.getFileName();
+				String targetFullPath = targetPath + "/" + file.getFileName();
+
+				System.out.println("source path: " + sourceFullPath);
+				System.out.println("target path: " + targetFullPath);
+				copyFile(share, sourceFullPath, targetFullPath);
+
+			}
+		}
+	}
+
+	// moving files and folders on server
+	public void moveFile(DiskShare share, String sourcePath, String targetPath) throws IOException {
+	    try (File file = share.openFile(
+	            sourcePath,
+	            EnumSet.of(AccessMask.GENERIC_READ, AccessMask.DELETE),
+	            null,
+	            SMB2ShareAccess.ALL,
+	            SMB2CreateDisposition.FILE_OPEN,
+	            null)) {
+
+	        file.rename(targetPath);
+	        System.out.println("File copied: " + targetPath);
+	    }
 	}
 	
-	public void deleteNestedFolder(DiskShare share, String folderPath) {
-		
+	public void moveFiles(DiskShare share, String sourcePath, String targetPath) throws IOException {
+
+		boolean isFolderExist = isFolderExist(share, sourcePath);
+		if (isFolderExist) {
+			List<FileIdBothDirectoryInformation> files = share.list(sourcePath);
+
+			for (FileIdBothDirectoryInformation file : files) {
+
+				if (file.getFileName().equals(".") || file.getFileName().equals("..")) {
+					continue;
+				}
+
+				String sourceFullPath = sourcePath + "\\" + file.getFileName();
+				String targetFullPath = targetPath + "\\" + file.getFileName();
+
+				System.out.println("source path: " + sourceFullPath);
+				System.out.println("target path: " + targetFullPath);
+				moveFile(share, sourceFullPath, targetFullPath);
+
+			}
+		}
 	}
+
 }
