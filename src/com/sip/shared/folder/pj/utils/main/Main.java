@@ -2,6 +2,10 @@ package com.sip.shared.folder.pj.utils.main;
 
 import java.io.IOException;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import com.hierynomus.smbj.share.DiskShare;
 import com.sip.shared.folder.pj.utils.SharedUtils;
 
@@ -44,7 +48,10 @@ public class Main {
 //		main.uploadFile(sharedUtils, share);
 		
 		//download file from server to local file system
-		main.downloadFile(sharedUtils, share);
+//		main.downloadFile(sharedUtils, share);
+		
+		//read xml file
+		main.readXML(sharedUtils);
 
 	}
 
@@ -140,8 +147,20 @@ public class Main {
 		}
 
 		shareUtils.disconnect();
+		
 	}
 	
+	
+	public void readXML(SharedUtils shareUtils) {
+		
+		String filename = "\\\\192.168.2.100\\Shares\\UOBKHFileUploadTesting\\DoneClone\\test.xml";
+		try {
+			shareUtils.readXML(filename);
+		} catch (SAXException | IOException | ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 	
 }

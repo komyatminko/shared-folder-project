@@ -8,6 +8,17 @@ import java.io.OutputStream;
 import java.util.EnumSet;
 import java.util.List;
 
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
@@ -268,4 +279,32 @@ public class SharedUtils {
             System.out.println("File downloaded successfully.");
         }
     }
+	
+	//reading xml file 
+	public void readXML(String filename) throws SAXException, IOException, ParserConfigurationException {
+
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = factory.newDocumentBuilder();
+	    Document document = builder.parse(new java.io.File(filename));
+	    document.getDocumentElement().normalize();
+	    
+	    System.out.println("Root element: " + document.getDocumentElement().getNodeName());
+	    NodeList nodeList = document.getElementsByTagName("employee");
+//	    document.getDocumentElement().getE
+	    for(int i = 0; i< nodeList.getLength(); i++) {
+	    	 Node node = nodeList.item(i);
+	    	
+	    	if(node.getNodeType() == Node.ELEMENT_NODE) {
+	    		Element  elem = (Element) node;
+	    		String id= elem.getAttribute("id");
+	    		String firstName = elem.getElementsByTagName("firstName").item(0).getTextContent();
+	    		String lastName = elem.getElementsByTagName("lastName").item(0).getTextContent();
+	    		String email = elem.getElementsByTagName("email").item(0).getTextContent();
+	    		System.out.println("id: " + id);
+	    		System.out.println("firstName: " + firstName);
+	    		System.out.println("lastName: " + lastName);
+	    		System.out.println("email: " + email);
+	    	}
+	    }
+	}
 }
