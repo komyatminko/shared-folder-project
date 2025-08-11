@@ -9,7 +9,6 @@ import java.util.EnumSet;
 import java.util.List;
 
 import com.hierynomus.msdtyp.AccessMask;
-import com.hierynomus.msfscc.FileAttributes;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
@@ -160,9 +159,7 @@ public class SharedUtils {
 				out.write(buffer, 0, bytesRead);
 			}
 			System.out.println("File copied: " + targetPath);
-		}
-		
-
+		} 	
 	}
 
 	public void copyFiles(DiskShare share, String sourcePath, String targetPath) throws IOException {
@@ -198,7 +195,8 @@ public class SharedUtils {
 	            SMB2CreateDisposition.FILE_OPEN,
 	            null)) {
 
-	        file.rename(targetPath);
+	    	//move the file to the target path
+	        file.rename(targetPath); 
 	        System.out.println("File moved: " + targetPath);
 	    }
 	}
